@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaEthereum, FaReact } from "react-icons/fa";
 import { SiSolidity } from "react-icons/si";
-import { FiGithub, FiTwitter } from "react-icons/fi";
+import { FiSend, FiGithub, FiTwitter } from "react-icons/fi";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -56,7 +56,7 @@ function App() {
           }}
         >
           <p>
-            Hello Fren!{" "}
+            Hello Fren!
             <span role="img" aria-label="Cowboy">
               👋🏻
             </span>
@@ -64,12 +64,12 @@ function App() {
           <p>
             <span role="img" aria-label="wave"></span>
             My name is Nick and I'm currently trying out "Web3". You can send me
-            a message which will be written on the <FaEthereum /> blockchain.
+            a message which will be written on the <FaEthereum /> Blockchain.
             This is my first dapp and my main motivation was starting to learn
             some new skills. This frontend is written with React <FaReact /> and
             in the backend I use Solidity
-            <SiSolidity /> (obvs.) to interact with the <FaEthereum />{" "}
-            blockchain.
+            <SiSolidity /> (obvs.) to interact with the <FaEthereum />
+            Blockchain.
           </p>
         </Box>
       </Box>
@@ -109,7 +109,7 @@ function App() {
               color="text.secondary"
               gutterBottom
             >
-              Connected with <FaEthereum /> account
+              Connected with <FaEthereum /> Account
             </Typography>
             <Typography
               sx={{ fontSize: 14 }}
@@ -200,7 +200,7 @@ function App() {
           variant="standard"
         />
         <Button variant="contained" size="small">
-          Send
+          <FiSend /> Send
         </Button>
       </Box>
     );
