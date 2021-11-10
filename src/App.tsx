@@ -24,17 +24,17 @@ function App() {
     return (
       <Box
         sx={{
-          "& > :not(style)": { m: 2, pr: 0 },
-          justifyContent: "right",
+          "& > :not(style)": { m: 0, pr: 7 },
+          justifyContent: "center",
           display: "flex"
         }}
       >
-        <a href="https://github.com/njuettner">
+        <Button target="_blank" href="https://github.com/njuettner">
           <FiGithub />
-        </a>
-        <a href="https://twitter.com/njuettner">
+        </Button>
+        <Button target="_blank" href="https://twitter.com/njuettner">
           <FiTwitter />
-        </a>
+        </Button>
       </Box>
     );
   };
