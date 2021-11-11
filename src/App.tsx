@@ -198,7 +198,7 @@ function App() {
     return (
       <Box
         sx={{
-          "& > :not(style)": { m: 10 },
+          "& > :not(style)": { m: 20 },
           display: "flex",
           justifyContent: "center"
         }}
@@ -360,14 +360,22 @@ function App() {
         <div className="center">
           <Nav />
           <Introduction />
-          {!account ? (
-            <Button variant="contained" onClick={WalletConnect}>
-              <FaEthereum />
-              Connect your wallet
-            </Button>
-          ) : (
-            <WalletAccountCard />
-          )}
+          <Box
+            sx={{
+              "& > :not(style)": { m: 10 },
+              justifyContent: "center",
+              display: "flex"
+            }}
+          >
+            {!account ? (
+              <Button variant="contained" onClick={WalletConnect}>
+                <FaEthereum />
+                Connect your wallet
+              </Button>
+            ) : (
+              <WalletAccountCard />
+            )}
+          </Box>
         </div>
         <div>
           <InputWithIcon />
