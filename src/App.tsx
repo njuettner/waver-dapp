@@ -1,5 +1,6 @@
+// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
-import { FaEthereum, FaGithub, FaReact } from "react-icons/fa";
+import { FaEthereum, FaReact } from "react-icons/fa";
 import { SiSolidity } from "react-icons/si";
 import { FiSend, FiGithub, FiTwitter } from "react-icons/fi";
 import { BsPersonCircle } from "react-icons/bs";
@@ -40,8 +41,8 @@ function App() {
             <BsPersonCircle />
           </ListItemIcon>
           <ListItemText
-            primary={wave.timestamp}
-            secondary={wave.address + " says " + wave.message}
+            primary={wave["timestamp"]}
+            secondary={wave["address"] + " says " + wave["message"]}
           />
         </ListItem>
       );
@@ -88,32 +89,33 @@ function App() {
 
   const getAllWaves = async () => {
     const { ethereum } = window;
+
     try {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const waveContract = new ethers.Contract(
+        const wavePortalContract = new ethers.Contract(
           contractAddress,
           contractABI,
           signer
         );
-        let blockchainWaves = await waveContract.getAllWaves();
-        console.log(blockchainWaves);
-        const wavesCleaned = blockchainWaves.map((el) => {
+        const waves = await wavePortalContract.getAllWaves();
+
+        const wavesCleaned = waves.map((wave) => {
           return {
-            address: el.waver,
-            message: el.message,
-            timestamp: new Date(el.timestamp._hex * 1000)
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp._hex * 1000)
               .toString()
               .split(" ")
               .slice(0, 5)
-              .join(" ")
+              .join(" "),
+            message: wave.message
           };
         });
 
         setAllWaves(wavesCleaned);
       } else {
-        console.log("Ethereum object doesn't exist.");
+        console.log("Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
@@ -195,7 +197,7 @@ function App() {
     return (
       <Box
         sx={{
-          "& > :not(style)": { m: 5 },
+          "& > :not(style)": { m: 10 },
           display: "flex",
           justifyContent: "center"
         }}
@@ -246,7 +248,7 @@ function App() {
       console.log(accounts[0]);
       setAccount(accounts[0]);
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 
@@ -309,11 +311,44 @@ function App() {
   }
 
   useEffect(() => {
-    getAllWaves();
     IsMetaMaskInstalled();
     WalletConnect();
-  }, []);
+    getAllWaves();
 
+    const onNewWave = (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message);
+      setAllWaves((prevState) => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(el.timestamp._hex * 1000)
+            .toString()
+            .split(" ")
+            .slice(0, 5)
+            .join(" "),
+          message: message
+        }
+      ]);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      wavePortalContract.on("NewWave", onNewWave);
+    }
+
+    return () => {
+      if (wavePortalContract) {
+        wavePortalContract.off("NewWave", onNewWave);
+      }
+    };
+  }, []);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

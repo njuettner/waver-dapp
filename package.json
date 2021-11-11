@@ -1,12 +1,8 @@
 {
-  "name": "react-typescript",
+  "name": "waver-dapp",
   "version": "1.0.0",
-  "description": "React and TypeScript example starter project",
-  "keywords": [
-    "typescript",
-    "react",
-    "starter"
-  ],
+  "description": "",
+  "keywords": [],
   "main": "src/index.tsx",
   "dependencies": {
     "@emotion/react": "11.5.0",
