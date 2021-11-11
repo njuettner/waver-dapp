@@ -1,4 +1,4 @@
-// @ts-nochecke
+// @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
 import { FaEthereum, FaReact } from "react-icons/fa";
 import { SiSolidity } from "react-icons/si";
