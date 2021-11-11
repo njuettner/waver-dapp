@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaEthereum, FaReact } from "react-icons/fa";
+import { FaEthereum, FaGithub, FaReact } from "react-icons/fa";
 import { SiSolidity } from "react-icons/si";
 import { FiSend, FiGithub, FiTwitter } from "react-icons/fi";
+import { BsPersonCircle } from "react-icons/bs";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -14,11 +15,110 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import CssBaseline from "@mui/material/CssBaseline";
 import jazzicon from "@metamask/jazzicon";
+import { ethers } from "ethers";
+import abi from "./utils/WavePortal.json";
+import Grid from "@mui/material/Grid";
+import ListItem from "@mui/material/ListItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
 
 import "./App.css";
 
 function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const contractAddress = "0xd1254961F0d6030F2d3347e01758101B2ab58378";
+  const contractABI = abi.abi;
+
+  const [account, setAccount] = useState("");
+  const [allWaves, setAllWaves] = useState([]);
+
+  function GenerateMessages() {
+    return allWaves.map((wave, index) => {
+      return (
+        <ListItem>
+          <ListItemIcon>
+            <BsPersonCircle />
+          </ListItemIcon>
+          <ListItemText
+            primary={wave.timestamp}
+            secondary={wave.address + " says " + wave.message}
+          />
+        </ListItem>
+      );
+    });
+  }
+  const wave = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        let count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
+
+        const message = document.getElementById("message").value;
+        console.log(message);
+        /*
+         * Execute the actual wave from your smart contract
+         */
+        const waveTxn = await wavePortalContract.wave(message, {
+          gasLimit: 300000
+        });
+        console.log("Mining...", waveTxn.hash);
+
+        await waveTxn.wait();
+        console.log("Mined -- ", waveTxn.hash);
+
+        count = await wavePortalContract.getTotalWaves();
+        console.log("Retrieved total wave count...", count.toNumber());
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getAllWaves = async () => {
+    const { ethereum } = window;
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const waveContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+        let blockchainWaves = await waveContract.getAllWaves();
+        console.log(blockchainWaves);
+        const wavesCleaned = blockchainWaves.map((el) => {
+          return {
+            address: el.waver,
+            message: el.message,
+            timestamp: new Date(el.timestamp._hex * 1000)
+              .toString()
+              .split(" ")
+              .slice(0, 5)
+              .join(" ")
+          };
+        });
+
+        setAllWaves(wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist.");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const Nav = () => {
     return (
@@ -52,7 +152,7 @@ function App() {
           sx={{
             "& > :not(style)": { m: 5 },
             width: 450,
-            height: 200
+            height: 220
           }}
         >
           <p>
@@ -71,6 +171,9 @@ function App() {
             <SiSolidity /> (obvs.) to interact with the <FaEthereum />
             Blockchain.
           </p>
+          <b>
+            <font color="red">This only works on Ropsten Network for now.</font>
+          </b>
         </Box>
       </Box>
     );
@@ -87,7 +190,6 @@ function App() {
       }),
     [prefersDarkMode]
   );
-  const [account, setAccount] = useState("");
 
   const WalletAccountCard = () => {
     return (
@@ -124,7 +226,7 @@ function App() {
             <Button
               size="small"
               target="_blank"
-              href={"https://etherscan.io/address/" + account}
+              href={"https://ropsten.etherscan.io/address/" + account}
             >
               Etherscan
             </Button>
@@ -187,7 +289,7 @@ function App() {
         }}
       >
         <TextField
-          id="input-with-icon-textfield"
+          id="sendWave"
           label="Your message"
           color="success"
           InputProps={{
@@ -199,13 +301,15 @@ function App() {
           }}
           variant="standard"
         />
-        <Button variant="contained" size="small">
+        <Button variant="contained" size="small" onClick={wave}>
           <FiSend /> Send
         </Button>
       </Box>
     );
   }
+
   useEffect(() => {
+    getAllWaves();
     IsMetaMaskInstalled();
     WalletConnect();
   }, []);
@@ -229,6 +333,11 @@ function App() {
         <div>
           <InputWithIcon />
         </div>
+        <Grid container spacing={0} direction="column" alignItems="center">
+          <div>
+            <GenerateMessages />
+          </div>
+        </Grid>
       </div>
     </ThemeProvider>
   );
