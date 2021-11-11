@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-nochecke
 import React, { useState, useEffect, useRef } from "react";
 import { FaEthereum, FaReact } from "react-icons/fa";
 import { SiSolidity } from "react-icons/si";
@@ -64,13 +64,13 @@ function App() {
         let count = await wavePortalContract.getTotalWaves();
         console.log("Retrieved total wave count...", count.toNumber());
 
-        const message = document.getElementById("message").value;
+        const message = document.getElementById("sendWave").value;
         console.log(message);
         /*
          * Execute the actual wave from your smart contract
          */
         const waveTxn = await wavePortalContract.wave(message, {
-          gasLimit: 300000
+          gasLimit: 600000
         });
         console.log("Mining...", waveTxn.hash);
 
@@ -94,22 +94,23 @@ function App() {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(
+        const waveContract = new ethers.Contract(
           contractAddress,
           contractABI,
           signer
         );
-        const waves = await wavePortalContract.getAllWaves();
+        const blockchainWaves = await waveContract.getAllWaves();
+        console.log(blockchainWaves);
 
-        const wavesCleaned = waves.map((wave) => {
+        const wavesCleaned = blockchainWaves.map((el) => {
           return {
-            address: wave.waver,
-            timestamp: new Date(wave.timestamp._hex * 1000)
+            address: el.waver,
+            message: el.message,
+            timestamp: new Date(el.timestamp * 1000)
               .toString()
               .split(" ")
               .slice(0, 5)
-              .join(" "),
-            message: wave.message
+              .join(" ")
           };
         });
 
@@ -311,26 +312,28 @@ function App() {
   }
 
   useEffect(() => {
+    getAllWaves();
     IsMetaMaskInstalled();
     WalletConnect();
-    getAllWaves();
 
-    const onNewWave = (from, timestamp, message) => {
-      console.log("NewWave", from, timestamp, message);
+    const onNewWave = (from, time, message) => {
+      console.log(from, time, message);
+
       setAllWaves((prevState) => [
         ...prevState,
         {
           address: from,
-          timestamp: new Date(el.timestamp._hex * 1000)
+          time: new Date(time * 1000)
             .toString()
             .split(" ")
             .slice(0, 5)
             .join(" "),
-          message: message
+          message
         }
       ]);
     };
 
+    let wavePortalContract;
     if (window.ethereum) {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -349,6 +352,7 @@ function App() {
       }
     };
   }, []);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
